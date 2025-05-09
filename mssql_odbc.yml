@@ -1,0 +1,26 @@
+--- Playbook to install the mssql_odbc packages needed for example to be used in php-odbc
+---  setup assumes a ubuntu system, instrucctions based on https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver16&tabs=alpine18-install%2Calpine17-install%2Cdebian8-install%2Credhat7-13-install%2Crhel7-offline
+- hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Get Repo
+      ansible.builtin.get_url:
+        url: https://packages.microsoft.com/config/ubuntu/{{ ansible_distribution_version }}/packages-microsoft-prod.deb
+        dest: "/var/cache/apt/archives/packages-microsoft-prod.deb"
+        mode: 0755
+
+    - name: Install Repo
+      ansible.builtin.apt:
+        deb: "/var/cache/apt/archives/packages-microsoft-prod.deb"
+
+    - name: Install dependencies
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - msodbcsql18
+        - mssql-tools18
+        - unixodbc-dev
+      environment:
+        - ACCEPT_EULA: Y
